@@ -47,4 +47,6 @@ urlpatterns = patterns(
     url(r'^(?P<object_id>\d+)/$',
         'entry_shortlink',
         name='zinnia_entry_shortlink'),
+    url(r'^markitup/preview.html$', 'markitup_preview',
+        name='zinnia_markitup_preview'),
     )

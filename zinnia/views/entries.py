@@ -1,11 +1,14 @@
 """Views for Zinnia entries"""
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
+from django.shortcuts import render_to_response
 from django.views.generic.list_detail import object_list
 from django.views.generic.date_based import archive_year
 from django.views.generic.date_based import archive_month
 from django.views.generic.date_based import archive_day
 from django.views.generic.date_based import object_detail
+from django.views.decorators.csrf import csrf_exempt
+from django.template import RequestContext
 
 from zinnia.models import Entry
 from zinnia.views.decorators import protect_entry
@@ -30,3 +33,10 @@ def entry_shortlink(request, object_id):
     """
     entry = get_object_or_404(Entry, pk=object_id)
     return redirect(entry, permanent=True)
+
+@csrf_exempt
+def markitup_preview(request):
+    markup = request.POST.get('data', '')
+    return render_to_response( 'zinnia/markitup_preview.html',
+                              {'preview': markup},
+                              context_instance=RequestContext(request))

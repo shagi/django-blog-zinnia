@@ -9,10 +9,14 @@ from django.db import connection
 from django.template import Node
 from django.template import Library
 from django.template import TemplateSyntaxError
+from django.template.defaultfilters import stringfilter
 from django.contrib.comments.models import CommentFlag
 from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import smart_unicode
+from django.utils.html import linebreaks
 from django.contrib.comments import get_model as get_comment_model
+from django.contrib.markup.templatetags.markup import markdown, textile
+from django.contrib.markup.templatetags.markup import restructuredtext
 
 from tagging.models import Tag
 from tagging.utils import calculate_cloud
@@ -27,6 +31,7 @@ from zinnia.comparison import VectorBuilder
 from zinnia.comparison import pearson_score
 from zinnia.templatetags.zcalendar import ZinniaCalendar
 from zinnia.templatetags.zbreadcrumbs import retrieve_breadcrumbs
+from zinnia.settings import MARKUP_LANGUAGE, MARKDOWN_EXTENSIONS
 
 register = Library()
 
@@ -397,3 +402,19 @@ def zinnia_statistics(template='zinnia/tags/statistics.html'):
             'entries_per_month': entries_per_month,
             'comments_per_entry': comments_per_entry,
             'linkbacks_per_entry': linkbacks_per_entry}
+
+
+@register.filter
+@stringfilter
+def markup(content):
+    """Return the content correctly formatted"""
+    if MARKUP_LANGUAGE == 'markdown':
+        return markdown(content, MARKDOWN_EXTENSIONS)
+    elif MARKUP_LANGUAGE == 'textile':
+        return textile(content)
+    elif MARKUP_LANGUAGE == 'restructuredtext':
+        return restructuredtext(content)
+    elif not '</p>' in content:
+        return linebreaks(content)
+    return content
+markup.is_safe = True

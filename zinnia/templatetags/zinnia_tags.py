@@ -45,7 +45,7 @@ CACHE_ENTRIES_RELATED = {}
 def get_categories(template='zinnia/tags/categories.html'):
     """Return the categories"""
     return {'template': template,
-            'categories': Category.tree.all()}
+            'categories': Category.objects.all()}
 
 
 @register.inclusion_tag('zinnia/tags/dummy.html')
@@ -90,7 +90,7 @@ def get_random_entries(number=5, template='zinnia/tags/random_entries.html'):
 
 @register.inclusion_tag('zinnia/tags/dummy.html')
 def get_popular_entries(number=5, template='zinnia/tags/popular_entries.html'):
-    """Return popular  entries"""
+    """Return popular entries"""
     ctype = ContentType.objects.get_for_model(Entry)
     query = """SELECT object_pk, COUNT(*) AS score
     FROM %s

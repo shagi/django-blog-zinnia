@@ -9,6 +9,7 @@ from django.utils.text import truncate_words
 from django.conf.urls.defaults import url
 from django.conf.urls.defaults import patterns
 from django.conf import settings as project_settings
+from django.utils.translation import get_language
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse, NoReverseMatch
 
@@ -188,12 +189,23 @@ class EntryAdmin(admin.ModelAdmin):
         return super(EntryAdmin, self).formfield_for_manytomany(
             db_field, request, **kwargs)
 
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super(EntryAdmin, self).get_readonly_fields(
+            request, obj)
+        if not request.user.has_perm('zinnia.can_change_status'):
+            readonly_fields = list(readonly_fields)
+            readonly_fields.append('status')
+        return readonly_fields
+
     def get_actions(self, request):
         """Define user actions by permissions"""
         actions = super(EntryAdmin, self).get_actions(request)
         if not request.user.has_perm('zinnia.can_change_author') \
            or not request.user.has_perm('zinnia.can_view_all'):
             del actions['make_mine']
+        if not request.user.has_perm('zinnia.can_change_status'):
+            del actions['make_hidden']
+            del actions['make_published']
         if not settings.PING_DIRECTORIES:
             del actions['ping_directories']
         if not settings.USE_TWITTER:
@@ -300,7 +312,8 @@ class EntryAdmin(admin.ModelAdmin):
                 name='zinnia_entry_autocomplete_tags'),
             url(r'^wymeditor/$', 'direct_to_template',
                 {'template': 'admin/zinnia/entry/wymeditor.js',
-                 'mimetype': 'application/javascript'},
+                 'mimetype': 'application/javascript',
+                 'extra_context': {'lang': get_language().split('-')[0]}},
                 name='zinnia_entry_wymeditor'),
             url(r'^markitup/$', 'direct_to_template',
                 {'template': 'admin/zinnia/entry/markitup.js',

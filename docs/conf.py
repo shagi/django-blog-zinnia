@@ -16,9 +16,11 @@ import sys
 import re
 from datetime import date
 
-sys.path.append(os.path.abspath('.'))
-sys.path.append(os.path.abspath('..'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zinniadocs_settings'
+HERE = os.path.abspath(os.path.dirname(__file__))
+
+sys.path.append(HERE)
+sys.path.append(os.path.join(HERE, '..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'extensions.settings'
 
 import zinnia
 
@@ -31,11 +33,10 @@ import zinnia
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
-              'zinniadocs']
+              'extensions.zinnia_docs']
 
 intersphinx_mapping = {
     'django': ('http://readthedocs.org/docs/django/en/latest/', None),
-    'djangocms': ('http://readthedocs.org/docs/django-cms/en/latest/', None),
     }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -83,7 +84,7 @@ exclude_patterns = ['build']
 #default_role = None
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
-add_function_parentheses = False
+add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
@@ -104,12 +105,38 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'nature'
+html_theme = 'default'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+text_color = '#33333'
+link_color = '#0066AA'
+box_color = '#e9e9f3'
+background_color = '#FFF'
+text_font = "Arial, Helvetica, sans-serif"
+
+html_theme_options = {
+    'footerbgcolor': background_color,
+    'footertextcolor': text_color,
+    'sidebarbgcolor': background_color,
+    'sidebartextcolor': text_color,
+    'sidebarlinkcolor': link_color,
+    'relbarbgcolor': background_color,
+    'relbartextcolor': text_color,
+    'relbarlinkcolor': link_color,
+    'bgcolor': background_color,
+    'textcolor': text_color,
+    'linkcolor': link_color,
+    'visitedlinkcolor': link_color,
+    'headbgcolor': box_color,
+    'headtextcolor': link_color,
+    'headlinkcolor': link_color,
+    'codebgcolor': box_color,
+    'bodyfont': text_font,
+    'headfont': text_font,
+    'sidebarwidth': 210,
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -123,17 +150,17 @@ html_theme = 'nature'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = 'logo.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = 'favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

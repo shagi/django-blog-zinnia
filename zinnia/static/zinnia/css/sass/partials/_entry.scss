@@ -1,25 +1,5 @@
-@mixin strong-icon($icon) {
-  strong {
-    padding-left: 1.5em;
-    background: transparent url($icon) no-repeat scroll;
-  }
-}
-
 .hentry {
   margin-bottom: 1em;
-}
-
-.featured h2.entry-title a {
-  $featured-color: lighten(adjust-hue($link-color, 180deg), 10%);
-  &:visited, &:link {
-    color: $featured-color;
-  }
-  &:hover {
-    color: lighten($featured-color, 10%);
-  }
-  &:active {
-    color: $link-active-color;
-  }
 }
 
 h2.entry-title {

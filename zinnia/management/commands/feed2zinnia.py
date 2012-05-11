@@ -1,17 +1,20 @@
 """Feed to Zinnia command module"""
 import sys
+from urllib2 import urlopen
 from datetime import datetime
 from optparse import make_option
 
+from django.core.files import File
+from django.utils.text import Truncator
 from django.utils.html import strip_tags
 from django.db.utils import IntegrityError
 from django.utils.encoding import smart_str
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.utils.text import truncate_words
 from django.template.defaultfilters import slugify
 from django.core.management.base import CommandError
 from django.core.management.base import LabelCommand
+from django.core.files.temp import NamedTemporaryFile
 
 from zinnia import __version__
 from zinnia.models import Entry
@@ -28,14 +31,17 @@ class Command(LabelCommand):
     args = 'url'
 
     option_list = LabelCommand.option_list + (
-        make_option('--noautoexcerpt', action='store_false',
-                    dest='auto_excerpt', default=True,
+        make_option('--no-auto-excerpt', action='store_false',
+                    dest='auto-excerpt', default=True,
                     help='Do NOT generate an excerpt if not present.'),
+        make_option('--no-enclosure', action='store_false',
+                    dest='image-enclosure', default=True,
+                    help='Do NOT save image enclosure if present.'),
+        make_option('--no-tags', action='store_false',
+                    dest='tags', default=True,
+                    help='Do NOT store categories as tags'),
         make_option('--author', dest='author', default='',
                     help='All imported entries belong to specified author'),
-        make_option('--category-is-tag', action='store_true',
-                    dest='category-tag', default=False,
-                    help='Store categories as tags'),
         )
     SITE = Site.objects.get_current()
 
@@ -60,10 +66,11 @@ class Command(LabelCommand):
             raise CommandError('You need to install the feedparser ' \
                                'module to run this command.')
 
-        self.verbosity = int(options.get('verbosity', 1))
-        self.auto_excerpt = options.get('auto_excerpt', True)
+        self.tags = options.get('tags', True)
         self.default_author = options.get('author')
-        self.category_tag = options.get('category-tag', False)
+        self.verbosity = int(options.get('verbosity', 1))
+        self.auto_excerpt = options.get('auto-excerpt', True)
+        self.image_enclosure = options.get('image-enclosure', True)
         if self.default_author:
             try:
                 self.default_author = User.objects.get(
@@ -103,15 +110,26 @@ class Command(LabelCommand):
                           'slug': slug}
 
             if not entry_dict['excerpt'] and self.auto_excerpt:
-                entry_dict['excerpt'] = truncate_words(
-                    strip_tags(feed_entry.description), 50)
-            if self.category_tag:
+                entry_dict['excerpt'] = Truncator('...').words(
+                      50, strip_tags(feed_entry.description))
+
+            if self.tags:
                 entry_dict['tags'] = self.import_tags(categories)
 
             entry = Entry(**entry_dict)
             entry.save()
             entry.categories.add(*categories)
             entry.sites.add(self.SITE)
+
+            if self.image_enclosure:
+                for enclosure in feed_entry.enclosures:
+                    if 'image' in enclosure.get('type') \
+                           and enclosure.get('href'):
+                        img_tmp = NamedTemporaryFile(delete=True)
+                        img_tmp.write(urlopen(enclosure['href']).read())
+                        img_tmp.flush()
+                        entry.image.save(slug, File(img_tmp))
+                        break
 
             if self.default_author:
                 entry.authors.add(self.default_author)

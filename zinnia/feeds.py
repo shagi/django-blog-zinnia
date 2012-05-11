@@ -12,7 +12,6 @@ from django.utils.translation import ugettext as _
 from django.contrib.syndication.views import Feed
 from django.core.urlresolvers import NoReverseMatch
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.comments.models import CommentFlag
 from django.contrib.contenttypes.models import ContentType
 
 from tagging.models import Tag
@@ -86,7 +85,7 @@ class EntryFeed(ZinniaFeed):
             url = item.image.url
         else:
             img = BeautifulSoup(item.html_content).find('img')
-            url = img['src'] if img else None
+            url = img.get('src') if img else None
         return urljoin(self.site_url, url) if url else None
 
     def item_enclosure_length(self, item):

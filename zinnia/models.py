@@ -167,7 +167,7 @@ class EntryAbstractClass(models.Model):
 
     @property
     def html_content(self):
-        """Return the content correctly formatted"""
+        """Return the Entry.content attribute formatted in HTML"""
         if MARKUP_LANGUAGE == 'markdown':
             return markdown(self.content, MARKDOWN_EXTENSIONS)
         elif MARKUP_LANGUAGE == 'textile':
@@ -296,7 +296,7 @@ class Entry(get_base_model()):
     """
     The final Entry model based on inheritence.
     Check this out for customizing the Entry Model class:
-    http://django-blog-zinnia.com/documentation/extending_entry_model/
+    http://django-blog-zinnia.com/documentation/how-to/extending_entry_model/
     """
 
 

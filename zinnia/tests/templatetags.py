@@ -153,11 +153,24 @@ class TemplateTagsTestCase(TestCase):
         second_entry.sites.add(site)
 
         comments.get_model().objects.create(comment='My Comment 1', site=site,
-                                            content_object=self.entry)
+                                            content_object=self.entry,
+                                            is_public=False)
         comments.get_model().objects.create(comment='My Comment 2', site=site,
-                                            content_object=self.entry)
+                                            content_object=self.entry,
+                                            is_public=False)
         comments.get_model().objects.create(comment='My Comment 3', site=site,
-                                            content_object=second_entry)
+                                            content_object=self.entry,
+                                            is_public=True)
+        comments.get_model().objects.create(comment='My Comment 4', site=site,
+                                            content_object=second_entry,
+                                            is_public=True)
+        comments.get_model().objects.create(comment='My Comment 5', site=site,
+                                            content_object=second_entry,
+                                            is_public=True)
+
+        context = get_popular_entries(3)
+        self.assertEquals(context['entries'], [second_entry, self.entry])
+        comments.get_model().objects.update(is_public=True)
         context = get_popular_entries(3)
         self.assertEquals(context['entries'], [self.entry, second_entry])
         self.entry.status = DRAFT
@@ -505,6 +518,10 @@ class TemplateTagsTestCase(TestCase):
         self.assertEquals(
             get_gravatar('  WEBMASTER@example.com  ', 15, 'x', '404'),
             'http://www.gravatar.com/avatar/86d4fd4a22de452'
+            'a9228298731a0b592.jpg?s=15&amp;r=x&amp;d=404')
+        self.assertEquals(
+            get_gravatar('  WEBMASTER@example.com  ', 15, 'x', '404', 'https'),
+            'https://secure.gravatar.com/avatar/86d4fd4a22de452'
             'a9228298731a0b592.jpg?s=15&amp;r=x&amp;d=404')
 
     def test_get_tags(self):
